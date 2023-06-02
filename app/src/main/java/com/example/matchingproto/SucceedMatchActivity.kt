@@ -52,7 +52,7 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mateID = intent.getStringExtra("mateName").toString()
+        mateID = intent.getStringExtra("mateID").toString()
         myID= intent.getStringExtra("myID").toString()
         //setContentView(R.layout.activity_succeed_match)
 
@@ -92,7 +92,7 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
                 makeMarker(matelatitude, matelongitude, mateID)
 
                 // 일정 시간 간격으로 다시 실행
-                //handler.postDelayed(this, interval.toLong())
+                handler.postDelayed(this, interval.toLong())
             }
         }
         handler.postDelayed(runnable, interval.toLong())
