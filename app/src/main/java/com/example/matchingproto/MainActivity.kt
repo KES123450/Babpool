@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity(),GoogleApiClient.ConnectionCallbacks,
                 SupportMapFragment?)!!.getMapAsync(this)
 
         binding.backBtn.setOnClickListener {
-            val intent = Intent(this@MainActivity, MainPage::class.java)
+            val intent = Intent(this@MainActivity, Main_login::class.java)
             startActivity(intent)
         }
         providerClinet=LocationServices.getFusedLocationProviderClient(this)

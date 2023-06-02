@@ -82,7 +82,6 @@ class MatchSuccessActivity: AppCompatActivity() , OnMapReadyCallback {
 
                 // 일정 시간 간격으로 다시 실행
                 handler.postDelayed(this, interval.toLong())
-
             }
         }
         handler.postDelayed(runnable, interval.toLong())

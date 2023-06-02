@@ -71,7 +71,7 @@ class AutoMatchingActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(intent)
         }
         mBinding.backBtn.setOnClickListener {
-            val intent = Intent(this@AutoMatchingActivity, MainPage::class.java)
+            val intent = Intent(this@AutoMatchingActivity, Main_login::class.java)
             startActivity(intent)
         }
         providerClinet = LocationServices.getFusedLocationProviderClient(this@AutoMatchingActivity)
