@@ -15,7 +15,7 @@ class WaitAutoParticiant: AppCompatActivity()  {
     lateinit var myID:String
     lateinit var waitBinding: WaitAutoMatchingBinding
     // 파베에서 데이터 불러올 주기(ms) 설정
-    private val interval = 3000
+    private val interval = 10000
 
     // Handler 객체 생성
     private val handler = Handler()
@@ -101,10 +101,17 @@ class WaitAutoParticiant: AppCompatActivity()  {
                         .update(mapOf("participate_find" to true,
                         "participantID" to myID))
                         .addOnSuccessListener {
+                            DB.collection("auto")
+                                .document(myID)
+                                .update(mapOf("participate_find" to true,
+                                "participantID" to documentID))
+                                .addOnSuccessListener {
+                                    val intent: Intent = Intent(this,FoundMatchActivity::class.java)
+                                    intent.putExtra("mateID",documentID)
+                                    startActivity(intent)
+                                }
 
-                            val intent: Intent = Intent(this,FoundMatchActivity::class.java)
-                            intent.putExtra("mateID",documentID)
-                            startActivity(intent)
+
                         }
                 }
             }
