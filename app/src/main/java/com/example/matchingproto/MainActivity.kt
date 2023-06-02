@@ -137,9 +137,9 @@ class MainActivity : AppCompatActivity(),GoogleApiClient.ConnectionCallbacks,
         }
         
         //임시로 유저id불러오는 버튼 리스너
-        binding.idBtn.setOnClickListener{
-            myID = binding.userId.text.toString()
-        }
+//        binding.idBtn.setOnClickListener{
+//            myID = binding.userId.text.toString()
+//        }
 
         // Runnable 객체 생성
         val runnable = object : Runnable {
