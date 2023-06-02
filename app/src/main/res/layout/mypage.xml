@@ -178,13 +178,14 @@
         android:paddingTop="70dp">
 
         <Button
+            android:id="@+id/btn_chat"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:textSize="25dp"
-            android:gravity="center"
-            android:textColor="@color/black"
             android:background="@drawable/border"
-            android:text="사용기록">
+            android:gravity="center"
+            android:text="사용기록"
+            android:textColor="@color/black"
+            android:textSize="25dp">
 
         </Button>
 

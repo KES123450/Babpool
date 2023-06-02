@@ -62,6 +62,13 @@ class Mypage : ComponentActivity() {
             finish()
         }
 
+        var chat = findViewById<Button>(R.id.btn_chat)
+
+        chat.setOnClickListener {
+            intent = Intent(this, ChatActivity::class.java)
+            startActivity(intent)
+        }
+
         //뒤로가기(메인페이지)
         backBtn.setOnClickListener {
             intent = Intent(this, Main_login :: class.java)
