@@ -2,6 +2,7 @@ package com.example.matchingproto
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
@@ -61,10 +62,9 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
 
         matchBinding.chatBtn.setOnClickListener {
             // TODO: 채팅 화면으로 이동
-            /*
+
             val intent = Intent(this@SucceedMatchActivity, ChatActivity::class.java)
             startActivity(intent)
-            */
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)

@@ -65,6 +65,7 @@ class WaitAutoParticiant: AppCompatActivity()  {
                         val intent: Intent = Intent(this,FoundMatchActivity::class.java)
                         intent.putExtra("mateID",participantID)
                         startActivity(intent)
+                        finish()
                     }
                 } else {
                     // participateCheck가 null인 경우 처리
@@ -109,6 +110,7 @@ class WaitAutoParticiant: AppCompatActivity()  {
                                     val intent: Intent = Intent(this,FoundMatchActivity::class.java)
                                     intent.putExtra("mateID",documentID)
                                     startActivity(intent)
+                                    finish()
                                 }
 
 

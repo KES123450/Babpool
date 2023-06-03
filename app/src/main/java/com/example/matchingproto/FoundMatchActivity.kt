@@ -14,6 +14,10 @@ class FoundMatchActivity : AppCompatActivity() {
     private lateinit var mBinding: ActivityFoundMatchBinding
     private lateinit var mateID:String
     private lateinit var myID:String
+
+    private var myAcceptance = false
+    private var mateAcceptance = false
+
     val DB: FirebaseFirestore = FirebaseFirestore.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,8 +71,15 @@ class FoundMatchActivity : AppCompatActivity() {
             .update("matchingCheck", "ACCEPT")
             .addOnSuccessListener {
                 Toast.makeText(getApplicationContext(), "상대의 대답을 기다리고 있습니다.", Toast.LENGTH_LONG).show();
+
+                // 내 ACCEPT 상태를 저장
+                myAcceptance = true
+
+                // 상대방의 상태와 비교하여 처리
+                checkBothAccepted()
             }
 
+        // mateAcceptance 업데이트
         DB.collection("auto")
             .document(myID)
             .addSnapshotListener { documentSnapshot, e ->
@@ -78,35 +89,50 @@ class FoundMatchActivity : AppCompatActivity() {
                 }
 
                 if (documentSnapshot != null && documentSnapshot.exists()) {
-                    val matchingCheck= documentSnapshot.getString("matchingCheck")
-                    if(matchingCheck.equals("ACCEPT")){
-                        
-                        DB.collection("User_Loc")
-                            .document(myID)
-                            .set(
-                                mapOf(
-                                    "longitude" to 0.0,
-                                    "latitude" to 0.0,
-                                    "finish_check" to false
-                                )
-                            )
-                        DB.collection("auto")
-                            .document(myID)
-                            .delete()
+                    val matchingCheck = documentSnapshot.getString("matchingCheck")
+                    if (matchingCheck == "ACCEPT") {
+                        // 상대방의 ACCEPT 상태를 저장
+                        mateAcceptance = true
 
-                        val intent = Intent(this@FoundMatchActivity, SucceedMatchActivity::class.java)
-                        intent.putExtra("mateID",mateID)
-                        intent.putExtra("myID",myID)
-                        startActivity(intent)
-                    }
-
-                    if(matchingCheck.equals("REFUSE")){
-                        val intent = Intent(this@FoundMatchActivity, AutoMatchingActivity::class.java)
-                        startActivity(intent)
-                        Toast.makeText(getApplicationContext(), "상대의 거절로 매칭에 실패하였습니다.", Toast.LENGTH_LONG).show();
+                        // 상대방의 상태와 비교하여 처리
+                        checkBothAccepted()
                     }
                 }
             }
+    }
+
+    // checkBothAccepted 메서드 수정
+    private fun checkBothAccepted() {
+        if (myAcceptance && mateAcceptance) {
+            // 초기화
+            myAcceptance = false
+            mateAcceptance = false
+
+            // 두 사용자가 모두 ACCEPT 상태일 때 처리하는 로직을 추가
+            DB.collection("User_Loc")
+                .document(myID)
+                .set(
+                    mapOf(
+                        "longitude" to 0.0,
+                        "latitude" to 0.0,
+                        "finish_check" to false
+                    )
+                )
+            DB.collection("auto")
+                .document(myID)
+                .delete()
+
+            val intent = Intent(this@FoundMatchActivity, SucceedMatchActivity::class.java)
+            intent.putExtra("mateID", mateID)
+            intent.putExtra("myID", myID)
+            startActivity(intent)
+            finish()
+        }
+    }
+
+    private fun handleFailure(e: Exception) {
+        Log.d("Firestore", "Error: $e")
+        // 오류 처리 로직 추가
     }
 
     private fun refuseMate(){
@@ -120,6 +146,7 @@ class FoundMatchActivity : AppCompatActivity() {
 
         val intent = Intent(this@FoundMatchActivity, AutoMatchingActivity::class.java)
         startActivity(intent)
+        finish()
         Toast.makeText(getApplicationContext(), "매칭에 실패하였습니다.", Toast.LENGTH_LONG).show();
     }
 
@@ -144,6 +171,7 @@ class FoundMatchActivity : AppCompatActivity() {
 
                         val intent = Intent(this@FoundMatchActivity, AutoMatchingActivity::class.java)
                         startActivity(intent)
+                        finish()
                         Toast.makeText(getApplicationContext(), "상대의 거절로 매칭에 실패하였습니다.", Toast.LENGTH_LONG).show();
                     }
                 }
