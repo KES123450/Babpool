@@ -8,32 +8,31 @@
     android:paddingVertical="15dp"
     >
 
-    <TextView
-        android:id="@+id/item_data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="제목"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:textColor="#2C2727"/>
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="horizontal">
         <TextView
+            android:id="@+id/item_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="인원|시간|카테고리|가게이름">
-
-        </TextView>
-        <Button
+            android:text="제목"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:textColor="#2C2727"/>
+        <ImageButton
+            android:src="@drawable/down_arrow_icon"
             android:id="@+id/show_body"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:scaleType="fitCenter"
+            android:layout_marginLeft="10dp"
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+
             android:text="화살표">
 
-        </Button>
+        </ImageButton>
     </LinearLayout>
+
 
 
     <TextView
