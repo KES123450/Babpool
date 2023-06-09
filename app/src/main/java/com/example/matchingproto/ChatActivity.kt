@@ -1,12 +1,11 @@
 package com.example.matchingproto
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +13,6 @@ import com.google.firebase.database.*
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import java.util.concurrent.atomic.AtomicReference
 
 class ChatActivity : AppCompatActivity() {
 
@@ -34,12 +32,18 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
+        var backbtn = findViewById<ImageButton>(R.id.backBtn)
+
+        backbtn.setOnClickListener {
+            onBackPressed()
+        }
+
         val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         val emailAddr = sharedPreferences.getString("email", "")
         val docref = db.collection("User_Info").document(emailAddr.toString())
 
-        Button_send = findViewById(R.id.Button_send)
-        EditText_chat = findViewById(R.id.EditText_chat)
+        Button_send = findViewById(R.id.btn_send)
+        EditText_chat = findViewById(R.id.et_chat)
         docref.get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
@@ -58,7 +62,7 @@ class ChatActivity : AppCompatActivity() {
                             }
                         }
 
-                        mRecyclerView = findViewById(R.id.my_recycler_view)
+                        mRecyclerView = findViewById(R.id.rcv_chat)
                         mRecyclerView.setHasFixedSize(true)
                         mLayoutManager = LinearLayoutManager(this)
                         mRecyclerView.layoutManager = mLayoutManager

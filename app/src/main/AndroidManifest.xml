@@ -2,11 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -18,51 +18,33 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MatchingProto"
         tools:targetApi="31">
-        <uses-library android:name="org.apache.http.legacy"
-            android:required="false"/>
-        <meta-data android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyDbGu3ovtY5aREV9NnDTN3CzEXs_hmn0YU"/>
-        <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
 
-        <activity android:name=".MatchSuccessActivity">
-        </activity>
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
 
-        <activity android:name=".WaitParticipateActivity">
-        </activity>
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyDbGu3ovtY5aREV9NnDTN3CzEXs_hmn0YU" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".Login">
-        </activity>
-
-        <activity android:name=".Main_login">
-        </activity>
-
-
-        <activity android:name=".Register">
-        </activity>
-
-        <activity android:name=".Notice">
-        </activity>
-
-        <activity android:name=".Mypage">
-        </activity>
-
-        <activity android:name=".MainActivity">
-        </activity>
-
-        <activity android:name=".AutoMatchingActivity">
-        </activity>
-        <activity android:name=".WaitAutoParticiant">
-        </activity>
-        <activity android:name=".FoundMatchActivity">
-        </activity>
-        <activity android:name=".SucceedMatchActivity">
-        </activity>
-        <activity android:name=".MainActivity1">
-        </activity>
-        <activity android:name=".ChatActivity">
-        </activity>
-
+        <activity android:name=".MatchSuccessActivity"></activity>
+        <activity android:name=".WaitParticipateActivity"></activity>
+        <activity android:name=".Login"></activity>
+        <activity android:name=".Main_login"></activity>
+        <activity android:name=".Register"></activity>
+        <activity android:name=".Notice"></activity>
+        <activity android:name=".Mypage"></activity>
+        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".AutoMatchingActivity"></activity>
+        <activity android:name=".WaitAutoParticiant"></activity>
+        <activity android:name=".FoundMatchActivity"></activity>
+        <activity android:name=".SucceedMatchActivity"></activity>
+        <activity android:name=".MainActivity1"></activity>
+        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".History"></activity>
         <activity
             android:name=".MainPage"
             android:exported="true">

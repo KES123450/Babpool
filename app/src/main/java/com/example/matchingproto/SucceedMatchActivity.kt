@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.matchingproto.databinding.ActivitySucceedMatchBinding
@@ -28,6 +29,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
 class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -43,7 +48,7 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var matchBinding: ActivitySucceedMatchBinding
     private val interval = 1000
     private val handler = Handler()
-    val userLocDB: FirebaseFirestore = FirebaseFirestore.getInstance()
+    val userDB: FirebaseFirestore = FirebaseFirestore.getInstance()
     var mylatitude:Double =0.0
     var mylongitude:Double=0.0
     var matelatitude:Double =0.0
@@ -59,6 +64,13 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
         matchBinding = ActivitySucceedMatchBinding.inflate(layoutInflater)
         var view = matchBinding.root
         setContentView(view)
+
+        waitFinish()
+
+        //매칭 종료 확인
+        matchBinding.backBtn.setOnClickListener {
+            showExitConfirmationDialog()
+        }
 
         matchBinding.chatBtn.setOnClickListener {
             // TODO: 채팅 화면으로 이동
@@ -119,7 +131,7 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // 상대방의 위치정보를 받아서 내 앱에 업데이트
     private fun getMateLoc(){
-        userLocDB.collection("User_Loc")
+        userDB.collection("User_Loc")
             .document(mateID)
             .addSnapshotListener { documentSnapshot, e ->
                 if (e != null) {
@@ -170,7 +182,7 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setUserLoc(){
         fetchLocation()
 
-        userLocDB.collection("User_Loc")
+        userDB.collection("User_Loc")
             .document(myID)
             .update(mapOf(
                 "latitude" to mylatitude,
@@ -212,6 +224,157 @@ class SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+    override fun onBackPressed() {
+        showExitConfirmationDialog()
+    }
+
+    //매칭 종료 여부 확인 창
+    private fun showExitConfirmationDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("매칭 종료 확인")
+            .setMessage("매칭을 종료하시겠습니까?")
+            .setPositiveButton("예") { dialog, which ->
+                // '예' 버튼을 클릭한 경우 종료 로직을 구현
+                val task1: Task<DocumentSnapshot> = userDB.collection("User_Info").document(myID).get()
+                val task2: Task<DocumentSnapshot> = userDB.collection("User_Info").document(mateID).get()
+
+                Tasks.whenAllSuccess<DocumentSnapshot>(task1, task2)
+                    .addOnSuccessListener { result ->
+                        // 모든 작업이 성공한 경우 결과 처리
+                        val mynn = result[0].getString("Nickname")
+                        val matenn = result[1].getString("Nickname")
+
+                        // 필드 값들을 활용하여 추가 작업 수행(기록 저장)
+                        val myhis: Map<String, Any> = hashMapOf<String?, String?>(matenn to matenn) as Map<String, Any>
+                        val matehis: Map<String, Any> = hashMapOf<String?, String?>(mynn to mynn) as Map<String, Any>
+
+                        val myHisDocRef = userDB.collection("User_rec").document(mynn.toString())
+                        myHisDocRef.get()
+                            .addOnSuccessListener { myHisDocSnapshot ->
+                                if (myHisDocSnapshot.exists()) {
+                                    // 기존 문서가 존재하는 경우 필드 추가 또는 업데이트
+                                    myHisDocRef.update(myhis)
+                                        .addOnSuccessListener {
+                                            // 필드 추가 또는 업데이트 성공
+                                        }
+                                        .addOnFailureListener { exception ->
+                                            // 필드 추가 또는 업데이트 실패
+                                        }
+                                } else {
+                                    // 기존 문서가 존재하지 않는 경우 새로운 문서 생성
+                                    myHisDocRef.set(myhis)
+                                        .addOnSuccessListener {
+                                            // 문서 생성 성공
+                                        }
+                                        .addOnFailureListener { exception ->
+                                            // 문서 생성 실패
+                                        }
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                // 오류 처리
+                                // 기존 문서 확인 실패
+                            }
+
+                        val mateHisDocRef = userDB.collection("User_rec").document(matenn.toString())
+                        mateHisDocRef.get()
+                            .addOnSuccessListener { mateHisDocSnapshot ->
+                                if (mateHisDocSnapshot.exists()) {
+                                    // 기존 문서가 존재하는 경우 필드 추가 또는 업데이트
+                                    mateHisDocRef.update(matehis)
+                                        .addOnSuccessListener {
+                                            // 필드 추가 또는 업데이트 성공
+                                        }
+                                        .addOnFailureListener { exception ->
+                                            // 필드 추가 또는 업데이트 실패
+                                        }
+                                } else {
+                                    // 기존 문서가 존재하지 않는 경우 새로운 문서 생성
+                                    mateHisDocRef.set(matehis)
+                                        .addOnSuccessListener {
+                                            // 문서 생성 성공
+                                        }
+                                        .addOnFailureListener { exception ->
+                                            // 문서 생성 실패
+                                        }
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                // 오류 처리
+                                // 기존 문서 확인 실패
+                            }
+                    }
+                    .addOnFailureListener { exception ->
+                        // 오류 처리
+                        // 작업 중 하나라도 실패한 경우
+                    }
+
+                //위치기록 삭제
+                userDB.collection("User_Loc")
+                    .document(mateID)
+                    .update("finish_check",true)
+
+                userDB.collection("User_Loc")
+                    .document(myID)
+                    .delete()
+
+                val intent = Intent(this, Main_login::class.java)
+                startActivity(intent)
+                finish()
+                Toast.makeText(this, "매칭 종료!", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("아니오") { dialog, which ->
+                // '아니오' 버튼을 클릭한 경우 아무 동작 없음
+            }
+            .show()
+    }
+
+    private fun waitFinish() {
+        userDB.collection("User_Loc")
+            .document(myID)
+            .addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    return@addSnapshotListener
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val documentData = documentSnapshot.data
+
+
+                    val finishCheck = documentData?.get("finish_check") as? Boolean
+                    if (finishCheck != null) {
+                        // finishCheck 사용하는 코드
+                        // ...
+                    } else {
+                        // finishCheck가 null인 경우 처리
+                        // ...
+                    }
+
+                    if (finishCheck == true) {
+                        userDB.collection("User_Loc")
+                            .document(myID)
+                            .delete()
+
+                        //채팅삭제
+                        val database = FirebaseDatabase.getInstance()
+                        val reference = database.getReference("chatting") // 삭제할 데이터의 경로
+
+                        reference.removeValue()
+                            .addOnSuccessListener {
+                                // 값 삭제 성공
+                            }
+                            .addOnFailureListener { exception ->
+                                // 값 삭제 실패
+                            }
+                        Toast.makeText(this, "매칭 종료!", Toast.LENGTH_SHORT).show()
+                        val intent: Intent = Intent(this,Main_login::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+            }
+    }
+
     override fun onMapReady(p0: GoogleMap?) {
         googleMap = p0
     }

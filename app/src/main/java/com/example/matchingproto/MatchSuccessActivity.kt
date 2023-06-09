@@ -26,6 +26,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.properties.Delegates
 
@@ -95,6 +99,11 @@ class MatchSuccessActivity: AppCompatActivity() , OnMapReadyCallback {
             waitFinish()
         }
 
+        matchBinding.chat.setOnClickListener {
+            var intent = Intent(this, ChatActivity::class.java)
+            startActivity(intent)
+        }
+
         matchBinding.finish.setOnClickListener{
             finishMatching()
             Toast.makeText(this, "매칭 종료!", Toast.LENGTH_SHORT).show()
@@ -105,6 +114,80 @@ class MatchSuccessActivity: AppCompatActivity() , OnMapReadyCallback {
     }
 
     private fun finishMatching(){
+        val task1: Task<DocumentSnapshot> = userLocDB.collection("User_Info").document(myID).get()
+        val task2: Task<DocumentSnapshot> = userLocDB.collection("User_Info").document(mateID).get()
+
+        Tasks.whenAllSuccess<DocumentSnapshot>(task1, task2)
+            .addOnSuccessListener { result ->
+                // 모든 작업이 성공한 경우 결과 처리
+                val mynn = result[0].getString("Nickname")
+                val matenn = result[1].getString("Nickname")
+
+                // 필드 값들을 활용하여 추가 작업 수행(기록 저장)
+                val myhis: Map<String, Any> = hashMapOf<String?, String?>(matenn to matenn) as Map<String, Any>
+                val matehis: Map<String, Any> = hashMapOf<String?, String?>(mynn to mynn) as Map<String, Any>
+
+                val myHisDocRef = userLocDB.collection("User_rec").document(mynn.toString())
+                myHisDocRef.get()
+                    .addOnSuccessListener { myHisDocSnapshot ->
+                        if (myHisDocSnapshot.exists()) {
+                            // 기존 문서가 존재하는 경우 필드 추가 또는 업데이트
+                            myHisDocRef.update(myhis)
+                                .addOnSuccessListener {
+                                    // 필드 추가 또는 업데이트 성공
+                                }
+                                .addOnFailureListener { exception ->
+                                    // 필드 추가 또는 업데이트 실패
+                                }
+                        } else {
+                            // 기존 문서가 존재하지 않는 경우 새로운 문서 생성
+                            myHisDocRef.set(myhis)
+                                .addOnSuccessListener {
+                                    // 문서 생성 성공
+                                }
+                                .addOnFailureListener { exception ->
+                                    // 문서 생성 실패
+                                }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        // 오류 처리
+                        // 기존 문서 확인 실패
+                    }
+
+                val mateHisDocRef = userLocDB.collection("User_rec").document(matenn.toString())
+                mateHisDocRef.get()
+                    .addOnSuccessListener { mateHisDocSnapshot ->
+                        if (mateHisDocSnapshot.exists()) {
+                            // 기존 문서가 존재하는 경우 필드 추가 또는 업데이트
+                            mateHisDocRef.update(matehis)
+                                .addOnSuccessListener {
+                                    // 필드 추가 또는 업데이트 성공
+                                }
+                                .addOnFailureListener { exception ->
+                                    // 필드 추가 또는 업데이트 실패
+                                }
+                        } else {
+                            // 기존 문서가 존재하지 않는 경우 새로운 문서 생성
+                            mateHisDocRef.set(matehis)
+                                .addOnSuccessListener {
+                                    // 문서 생성 성공
+                                }
+                                .addOnFailureListener { exception ->
+                                    // 문서 생성 실패
+                                }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        // 오류 처리
+                        // 기존 문서 확인 실패
+                    }
+            }
+            .addOnFailureListener { exception ->
+                // 오류 처리
+                // 작업 중 하나라도 실패한 경우
+            }
+
         userLocDB.collection("User_Loc")
             .document(mateID)
             .update("finish_check",true)
@@ -112,6 +195,17 @@ class MatchSuccessActivity: AppCompatActivity() , OnMapReadyCallback {
         userLocDB.collection("User_Loc")
             .document(myID)
             .delete()
+
+        //채팅삭제
+        val database = FirebaseDatabase.getInstance()
+        val reference = database.getReference("chatting") // 삭제할 데이터의 경로
+        reference.removeValue()
+            .addOnSuccessListener {
+                // 값 삭제 성공
+            }
+            .addOnFailureListener { exception ->
+                // 값 삭제 실패
+            }
 
         val intent: Intent = Intent(this,Main_login::class.java)
         startActivity(intent)

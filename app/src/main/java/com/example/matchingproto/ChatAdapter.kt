@@ -15,8 +15,8 @@ class ChatAdapter(
 ) : RecyclerView.Adapter<ChatAdapter.MyViewHolder>() {
 
     class MyViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-        val TextView_nickname: TextView = v.findViewById(R.id.TextView_nickname)
-        val TextView_msg: TextView = v.findViewById(R.id.TextView_msg)
+        val TextView_nickname: TextView = v.findViewById(R.id.tv_nick)
+        val TextView_msg: TextView = v.findViewById(R.id.tv_msg)
         val rootView: View = v
     }
 

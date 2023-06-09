@@ -47,6 +47,12 @@ class Mypage : ComponentActivity() {
                     gender.text = user.getString("Gender")
                     nn.text = user.getString("Nickname")
                     rec.text = user.getLong("Recommendation").toString()
+
+                    //사용자 닉네임 임시저장
+                    val sharedPreferences2 = getSharedPreferences("MyPrefs2", Context.MODE_PRIVATE)
+                    val editor = sharedPreferences2.edit()
+                    editor.putString("nickname", user.getString("Nickname"))
+                    editor.apply()
                 }
             }
             .addOnFailureListener { exception ->
@@ -62,11 +68,12 @@ class Mypage : ComponentActivity() {
             finish()
         }
 
-        var chat = findViewById<Button>(R.id.btn_chat)
+        var history = findViewById<Button>(R.id.btn_history)
 
-        chat.setOnClickListener {
-            intent = Intent(this, ChatActivity::class.java)
+        history.setOnClickListener {
+            intent = Intent(this, History::class.java)
             startActivity(intent)
+            finish()
         }
 
         //뒤로가기(메인페이지)

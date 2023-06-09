@@ -45,7 +45,7 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
+        android:id="@+id/rcv_chat"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="20dp"
@@ -70,7 +70,7 @@
                 android:src="@drawable/rectangle_28" />
 
             <EditText
-                android:id="@+id/EditText_chat"
+                android:id="@+id/et_chat"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:hint="채팅을 입력하세요..."
@@ -83,7 +83,7 @@
             android:layout_height="wrap_content">
 
             <ImageButton
-                android:id="@+id/Button_send"
+                android:id="@+id/btn_send"
                 android:layout_width="65dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MatchingProto</string>
+    <string name="title_activity_history">History</string>
 </resources>
