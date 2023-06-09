@@ -1,0 +1,86 @@
+Index: app/src/main/java/com/example/matchingproto/SucceedMatchActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.matchingproto\r\n\r\nimport android.Manifest\r\nimport android.annotation.SuppressLint\r\nimport android.content.pm.PackageManager\r\nimport android.location.Location\r\nimport androidx.appcompat.app.AppCompatActivity\r\nimport android.os.Bundle\r\nimport android.os.Handler\r\nimport android.os.Looper\r\nimport android.util.Log\r\nimport android.widget.Toast\r\nimport androidx.core.app.ActivityCompat\r\nimport androidx.core.content.ContextCompat\r\nimport com.example.matchingproto.databinding.ActivitySucceedMatchBinding\r\nimport com.google.android.gms.common.api.GoogleApiClient\r\nimport com.google.android.gms.location.FusedLocationProviderClient\r\nimport com.google.android.gms.location.LocationCallback\r\nimport com.google.android.gms.location.LocationRequest\r\nimport com.google.android.gms.location.LocationResult\r\nimport com.google.android.gms.location.LocationServices\r\nimport com.google.android.gms.maps.CameraUpdateFactory\r\nimport com.google.android.gms.maps.GoogleMap\r\nimport com.google.android.gms.maps.OnMapReadyCallback\r\nimport com.google.android.gms.maps.SupportMapFragment\r\nimport com.google.android.gms.maps.model.BitmapDescriptorFactory\r\nimport com.google.android.gms.maps.model.CameraPosition\r\nimport com.google.android.gms.maps.model.LatLng\r\nimport com.google.android.gms.maps.model.MarkerOptions\r\nimport com.google.firebase.firestore.FirebaseFirestore\r\n\r\nclass SucceedMatchActivity : AppCompatActivity(), OnMapReadyCallback {\r\n    var PERM_FLAG = 99\r\n    val permission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)\r\n    lateinit var providerClinet : FusedLocationProviderClient\r\n    private lateinit var mMap: GoogleMap\r\n    lateinit var apiClient : GoogleApiClient\r\n    private lateinit var fusedLocationClient: FusedLocationProviderClient\r\n    private lateinit var locationRequest: LocationRequest\r\n    var myID = \"KGU\"        // 임시로 설정해둔 내ID\r\n    lateinit var mateID:String\r\n    lateinit var matchBinding: ActivitySucceedMatchBinding\r\n    private val interval = 1000\r\n    private val handler = Handler()\r\n    val userLocDB: FirebaseFirestore = FirebaseFirestore.getInstance()\r\n    var mylatitude:Double =0.0\r\n    var mylongitude:Double=0.0\r\n    var matelatitude:Double =0.0\r\n    var matelongitude:Double=0.0\r\n    var googleMap: GoogleMap? = null\r\n\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        mateID = intent.getStringExtra(\"mateName\").toString()\r\n        myID= intent.getStringExtra(\"myID\").toString()\r\n        //setContentView(R.layout.activity_succeed_match)\r\n\r\n        matchBinding = ActivitySucceedMatchBinding.inflate(layoutInflater)\r\n        var view = matchBinding.root\r\n        setContentView(view)\r\n\r\n        matchBinding.chatBtn.setOnClickListener {\r\n            // TODO: 채팅 화면으로 이동\r\n            /*\r\n            val intent = Intent(this@SucceedMatchActivity, ChatActivity::class.java)\r\n            startActivity(intent)\r\n            */\r\n        }\r\n\r\n        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)\r\n        locationRequest = LocationRequest.create()\r\n            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)\r\n            .setInterval(10 * 1000) // 10 seconds\r\n            .setFastestInterval(1 * 1000) // 1 second\r\n        setContentView(matchBinding.root)\r\n        (supportFragmentManager.findFragmentById(R.id.map) as\r\n                SupportMapFragment?)!!.getMapAsync(this)\r\n        getMateLoc()\r\n        val runnable = object : Runnable {\r\n            override fun run() {\r\n                Log.d(\"log\", mylatitude.toString())\r\n\r\n                setUserLoc()\r\n\r\n                googleMap?.clear()\r\n                makeMarker(mylatitude, mylongitude, myID)\r\n                makeMarker(matelatitude, matelongitude, mateID)\r\n\r\n                // 일정 시간 간격으로 다시 실행\r\n                //handler.postDelayed(this, interval.toLong())\r\n            }\r\n        }\r\n        handler.postDelayed(runnable, interval.toLong())\r\n        providerClinet = LocationServices.getFusedLocationProviderClient(this@SucceedMatchActivity)\r\n\r\n        val mapFragment = supportFragmentManager\r\n            .findFragmentById(R.id.map) as SupportMapFragment\r\n        mapFragment.getMapAsync(this)\r\n\r\n        if(isPermitted()){\r\n            startProcess()\r\n        }\r\n        else {\r\n            ActivityCompat.requestPermissions(this, permission, PERM_FLAG)\r\n        }\r\n    }\r\n    fun isPermitted() : Boolean{\r\n        for(perm in permission) {\r\n            if(ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED)\r\n                return false\r\n        }\r\n        return true\r\n    }\r\n    fun startProcess(){\r\n        val mapFragment = supportFragmentManager\r\n            .findFragmentById(R.id.map) as SupportMapFragment\r\n        mapFragment.getMapAsync(this)\r\n    }\r\n\r\n    // 상대방의 위치정보를 받아서 내 앱에 업데이트\r\n    private fun getMateLoc(){\r\n        userLocDB.collection(\"User_Loc\")\r\n            .document(mateID)\r\n            .addSnapshotListener { documentSnapshot, e ->\r\n                if (e != null) {\r\n                    Log.d(\"Firestore\", \"Listen failed: $e\")\r\n                    return@addSnapshotListener\r\n                }\r\n\r\n                if (documentSnapshot != null && documentSnapshot.exists()) {\r\n                    val documentData = documentSnapshot.data\r\n                    matelatitude = documentData?.get(\"latitude\") as Double\r\n                    matelongitude = documentData?.get(\"longitude\") as Double\r\n\r\n                } else {\r\n                    Log.d(\"Firestore\", \"Document does not exist\")\r\n                }\r\n            }\r\n    }\r\n    private fun fetchLocation() {\r\n        if (ActivityCompat.checkSelfPermission(\r\n                    this,\r\n                Manifest.permission.ACCESS_FINE_LOCATION\r\n            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(\r\n                    this,\r\n                Manifest.permission.ACCESS_COARSE_LOCATION\r\n            ) != PackageManager.PERMISSION_GRANTED\r\n        ) {\r\n                // TODO: Consider calling\r\n                //    ActivityCompat#requestPermissions\r\n                // here to request the missing permissions, and then overriding\r\n                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,\r\n                //                                          int[] grantResults)\r\n                // to handle the case where the user grants the permission. See the documentation\r\n                // for ActivityCompat#requestPermissions for more details.\r\n                return\r\n        }\r\n        fusedLocationClient.requestLocationUpdates(locationRequest, object : LocationCallback()\r\n        {\r\n            override fun onLocationResult(locationResult: LocationResult?) {\r\n                locationResult?.lastLocation?.let {\r\n                    mylatitude = it.latitude\r\n                    mylongitude = it.longitude\r\n                // do something with latitude and longitude\r\n                }\r\n            } }, null)\r\n    }\r\n\r\n    //내 위치정보를 fetchLocation으로 받아서 파이어베이스에 업데이트\r\n    private fun setUserLoc(){\r\n        fetchLocation()\r\n\r\n        userLocDB.collection(\"User_Loc\")\r\n            .document(myID)\r\n            .update(mapOf(\r\n                \"latitude\" to mylatitude,\r\n                \"longitude\" to mylongitude\r\n            ))\r\n\r\n    }\r\n    private fun makeMarker(latitude:Double,longitude:Double,ID:String){\r\n        //마커표시\r\n        val markerOption= MarkerOptions()\r\n        markerOption.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker2))\r\n        markerOption.position(LatLng(latitude, longitude))\r\n        markerOption.title(ID)\r\n\r\n        googleMap?.addMarker(markerOption)\r\n    }\r\n    override fun onRequestPermissionsResult(\r\n        requestCode: Int,\r\n        permissions: Array<out String>,\r\n        grantResults: IntArray\r\n    ) {\r\n        super.onRequestPermissionsResult(requestCode, permissions, grantResults)\r\n        when(requestCode){\r\n            PERM_FLAG -> {\r\n                var check = false\r\n                for(grant in grantResults){\r\n                    if(grant != PackageManager.PERMISSION_GRANTED){\r\n                        check = false\r\n                        break\r\n                    }\r\n                }\r\n                if(check){\r\n                    startProcess()\r\n                }\r\n                else {\r\n                    Toast.makeText(this, \"권한을 허용해야 어플 사용이 가능합니다.\", Toast.LENGTH_SHORT).show()\r\n                    finish()\r\n                }\r\n            }\r\n        }\r\n    }\r\n    override fun onMapReady(p0: GoogleMap?) {\r\n        googleMap = p0\r\n    }\r\n    // TODO: 상대방 현재 위치를 받아서 지도에 표시\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/matchingproto/SucceedMatchActivity.kt b/app/src/main/java/com/example/matchingproto/SucceedMatchActivity.kt
+--- a/app/src/main/java/com/example/matchingproto/SucceedMatchActivity.kt	(revision 9263d87ec8d8f34c58e5deb5bb7d06795b7ab825)
++++ b/app/src/main/java/com/example/matchingproto/SucceedMatchActivity.kt	(date 1685703965858)
+@@ -51,7 +51,7 @@
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+-        mateID = intent.getStringExtra("mateName").toString()
++        mateID = intent.getStringExtra("mateID").toString()
+         myID= intent.getStringExtra("myID").toString()
+         //setContentView(R.layout.activity_succeed_match)
+ 
+@@ -75,7 +75,9 @@
+         setContentView(matchBinding.root)
+         (supportFragmentManager.findFragmentById(R.id.map) as
+                 SupportMapFragment?)!!.getMapAsync(this)
++
+         getMateLoc()
++
+         val runnable = object : Runnable {
+             override fun run() {
+                 Log.d("log", mylatitude.toString())
+@@ -87,7 +89,7 @@
+                 makeMarker(matelatitude, matelongitude, mateID)
+ 
+                 // 일정 시간 간격으로 다시 실행
+-                //handler.postDelayed(this, interval.toLong())
++                handler.postDelayed(this, interval.toLong())
+             }
+         }
+         handler.postDelayed(runnable, interval.toLong())
+Index: .idea/deploymentTargetDropDown.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/deploymentTargetDropDown.xml b/.idea/deploymentTargetDropDown.xml
+new file mode 100644
+--- /dev/null	(date 1685702200714)
++++ b/.idea/deploymentTargetDropDown.xml	(date 1685702200714)
+@@ -0,0 +1,37 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="deploymentTargetDropDown">
++    <targetSelectedWithDropDown>
++      <Target>
++        <type value="QUICK_BOOT_TARGET" />
++        <deviceKey>
++          <Key>
++            <type value="VIRTUAL_DEVICE_PATH" />
++            <value value="C:\Users\a5520\.android\avd\Pixel_3a_API_33_x86_64.avd" />
++          </Key>
++        </deviceKey>
++      </Target>
++    </targetSelectedWithDropDown>
++    <timeTargetWasSelectedWithDropDown value="2023-06-02T10:36:32.642169500Z" />
++    <targetsSelectedWithDialog>
++      <Target>
++        <type value="QUICK_BOOT_TARGET" />
++        <deviceKey>
++          <Key>
++            <type value="VIRTUAL_DEVICE_PATH" />
++            <value value="C:\Users\a5520\.android\avd\Pixel_3a_API_33_x86_64.avd" />
++          </Key>
++        </deviceKey>
++      </Target>
++      <Target>
++        <type value="QUICK_BOOT_TARGET" />
++        <deviceKey>
++          <Key>
++            <type value="VIRTUAL_DEVICE_PATH" />
++            <value value="C:\Users\a5520\.android\avd\Pixel_3a_API_33_2.avd" />
++          </Key>
++        </deviceKey>
++      </Target>
++    </targetsSelectedWithDialog>
++  </component>
++</project>
+\ No newline at end of file
