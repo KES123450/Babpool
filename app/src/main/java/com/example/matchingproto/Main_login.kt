@@ -30,7 +30,6 @@ class Main_login : ComponentActivity() {
         setContentView(R.layout.activity_main_login)
 
         recent = findViewById<TextView>(R.id.recent_party)
-        recentTime = findViewById<TextView>(R.id.recent_time)
         var userBtn = findViewById<ImageButton>(R.id.user)
 
         userBtn.setOnClickListener {
